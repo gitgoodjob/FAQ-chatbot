@@ -3,13 +3,14 @@ import streamlit as st
 import requests
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
+from google.generativeai import Client as GeminiClient  # Importing Gemini SDK
 
 # Function to fetch and process FAQ content from a URL
 def fetch_faq_content(faq_url: str) -> str:
     try:
         response = requests.get(faq_url)
         response.raise_for_status()
-        return response.text  # You might want to parse this depending on the format
+        return response.text  # Parse as needed (HTML, JSON, etc.)
     except Exception as e:
         return f"Error fetching FAQ content: {str(e)}"
 
@@ -34,7 +35,7 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
         prompt = f"Based on the following FAQ content, answer the question: {user_input}\n\nFAQ Content:\n{faq_content}"
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-4",  # or "gpt-3.5-turbo"
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant that answers questions based on FAQ content."},
                     {"role": "user", "content": prompt},
@@ -45,14 +46,25 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
             return response['choices'][0]['message']['content'].strip()
         except Exception as e:
             return f"Error generating response from GPT model: {str(e)}"
-    
+
     elif model == "LLaMA":
-        # Implement LLaMA API interaction here
+        # Placeholder for LLaMA integration
+        # Update this section with actual LLaMA integration when available
         return "LLaMA model is currently not supported."
 
     elif model == "Gemini":
-        # Implement Gemini API interaction here
-        return "Gemini model is currently not supported."
+        client = GeminiClient(api_key=api_key)  # Initialize Gemini client
+        prompt = f"FAQ Content:\n{faq_content}\nQuestion: {user_input}"
+        try:
+            response = client.query(prompt)  # Replace with actual method to get a response
+            return response['answer'].strip()
+        except Exception as e:
+            return f"Error generating response from Gemini model: {str(e)}"
+
+    elif model == "Claude":
+        # Placeholder for Claude integration
+        # Update this section with actual Claude integration when available
+        return "Claude model is currently not supported."
 
     else:
         return "Unsupported model selected."
@@ -64,7 +76,7 @@ st.title("AI-Powered FAQ Chatbot")
 st.image(apply_watermark("assets/company_logo.png"))
 
 # User input fields
-model_choice = st.selectbox("Choose the AI model", ["GPT (OpenAI)", "LLaMA", "Gemini"])
+model_choice = st.selectbox("Choose the AI model", ["GPT (OpenAI)", "LLaMA", "Gemini", "Claude"])
 api_key = st.text_input("Enter your API key", type="password")
 faq_url = st.text_input("Enter the FAQ URL")
 
