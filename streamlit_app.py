@@ -4,7 +4,7 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from google.generativeai import Client as GeminiClient  # Importing Gemini SDK
- 
+
 # Function to fetch and process FAQ content from a URL
 def fetch_faq_content(faq_url: str) -> str:
     try:
@@ -47,11 +47,6 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
         except Exception as e:
             return f"Error generating response from GPT model: {str(e)}"
 
-    elif model == "LLaMA":
-        # Placeholder for LLaMA integration
-        # Update this section with actual LLaMA integration when available
-        return "LLaMA model is currently not supported."
-
     elif model == "Gemini":
         client = GeminiClient(api_key=api_key)  # Initialize Gemini client
         prompt = f"FAQ Content:\n{faq_content}\nQuestion: {user_input}"
@@ -60,11 +55,6 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
             return response['answer'].strip()
         except Exception as e:
             return f"Error generating response from Gemini model: {str(e)}"
-
-    elif model == "Claude":
-        # Placeholder for Claude integration
-        # Update this section with actual Claude integration when available
-        return "Claude model is currently not supported."
 
     else:
         return "Unsupported model selected."
@@ -76,7 +66,7 @@ st.title("AI-Powered FAQ Chatbot")
 st.image(apply_watermark("assets/company_logo.png"))
 
 # User input fields
-model_choice = st.selectbox("Choose the AI model", ["GPT (OpenAI)", "LLaMA", "Gemini", "Claude"])
+model_choice = st.selectbox("Choose the AI model", ["GPT (OpenAI)", "Gemini"])
 api_key = st.text_input("Enter your API key", type="password")
 faq_url = st.text_input("Enter the FAQ URL")
 
