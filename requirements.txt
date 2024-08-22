@@ -1,4 +1,4 @@
 streamlit
 openai
 requests
-google-generativeai
+-q -U google-generativeai
