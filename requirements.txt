@@ -1,6 +1,7 @@
 streamlit
 openai
 google-generativeai
-llama-cpp-python
+#llama2-wrapper
 requests
 Pillow
+claude2
