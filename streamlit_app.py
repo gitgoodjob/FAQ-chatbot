@@ -4,7 +4,7 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from google.generativeai import Client as GeminiClient  # Importing Gemini SDK
-
+ 
 # Function to fetch and process FAQ content from a URL
 def fetch_faq_content(faq_url: str) -> str:
     try:
