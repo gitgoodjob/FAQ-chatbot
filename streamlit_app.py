@@ -1,4 +1,7 @@
 import streamlit as st
+import openai
+from langchain.llms import LLaMA
+from typing import Optional
 
 
 def chat_with_gpt(api_key: str, user_input: str) -> str:
