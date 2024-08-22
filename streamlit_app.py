@@ -29,16 +29,20 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
     if model == "GPT (OpenAI)":
         openai.api_key = api_key
         prompt = f"Based on the following FAQ content, answer the question: {user_input}\n\nFAQ Content:\n{faq_content}"
-        response = openai.ChatCompletion.create(
-            model="gpt-4",  # or "gpt-3.5-turbo" if you don't have access to GPT-4
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that answers questions based on FAQ content."},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=150,
-            temperature=0.7,
-        )
-        return response.choices[0].message['content'].strip()
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",  # or "gpt-3.5-turbo"
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that answers questions based on FAQ content."},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=150,
+                temperature=0.7,
+            )
+            return response.choices[0].message['content'].strip()
+        except Exception as e:
+            return f"Error generating response from GPT model: {str(e)}"
+
     
     elif model == "LLaMA":
         tokenizer = AutoTokenizer.from_pretrained("huggingface/llama")
