@@ -30,7 +30,7 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
         except Exception as e:
             return f"Error generating response from GPT model: {str(e)}"
 
-    elif model == "Gemini":
+    '''elif model == "Gemini":
         url = "https://api.google.com/v1/generative/gemini"  # Replace with the correct endpoint from documentation
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -46,7 +46,7 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
             return response.json().get('text', 'No answer found').strip()
         except Exception as e:
             return f"Error generating response from Gemini model: {str(e)}"
-
+'''
     else:
         return "Unsupported model selected."
 
