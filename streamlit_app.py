@@ -1,7 +1,6 @@
 import openai
 import streamlit as st
 import requests
-from google.generativeai import Client as GeminiClient
 
 # Function to fetch and process FAQ content from a URL
 def fetch_faq_content(faq_url: str) -> str:
@@ -32,11 +31,19 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
             return f"Error generating response from GPT model: {str(e)}"
 
     elif model == "Gemini":
-        client = GeminiClient(api_key=api_key)
-        prompt = f"FAQ Content:\n{faq_content}\nQuestion: {user_input}"
+        url = "https://api.google.com/v1/generative/gemini"  # Replace with the correct endpoint from documentation
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "prompt": f"FAQ Content:\n{faq_content}\nQuestion: {user_input}",
+            "max_tokens": 150
+        }
         try:
-            response = client.generate_text(prompt=prompt)
-            return response['text'].strip()
+            response = requests.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            return response.json().get('text', 'No answer found').strip()
         except Exception as e:
             return f"Error generating response from Gemini model: {str(e)}"
 
