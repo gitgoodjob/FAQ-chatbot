@@ -1,31 +1,34 @@
-import streamlit as st
 import openai
+import streamlit as st
 import requests
-from bs4 import BeautifulSoup
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
-def extract_faq_from_url(faq_url: str) -> str:
-    """Extracts FAQ content from a given URL."""
+# Function to fetch and process FAQ content from a URL
+def fetch_faq_content(faq_url: str) -> str:
     try:
         response = requests.get(faq_url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Example logic to extract FAQ based on common HTML structure
-        faq_sections = soup.find_all('div', class_='faq-section')  # Example class
-        faq_text = ""
-
-        for section in faq_sections:
-            questions = section.find_all('h3')
-            answers = section.find_all('p')
-            for question, answer in zip(questions, answers):
-                faq_text += f"Q: {question.get_text(strip=True)}\nA: {answer.get_text(strip=True)}\n\n"
-
-        return faq_text.strip()
+        response.raise_for_status()
+        return response.text  # You might want to parse this depending on the format
     except Exception as e:
-        return f"Error extracting FAQs: {str(e)}"
+        return f"Error fetching FAQ content: {str(e)}"
 
+# Function to create a watermark logo
+def apply_watermark(image_path, output_size=(1024, 768)):
+    logo = Image.open(image_path).convert("RGBA")
+    logo = logo.resize(output_size, Image.ANTIALIAS)
+
+    watermark = Image.new("RGBA", logo.size)
+    draw = ImageDraw.Draw(watermark, "RGBA")
+    draw.text((logo.size[0] // 4, logo.size[1] // 2), "FAQ Logo", font=ImageFont.load_default(), fill=(255, 255, 255, 128))
+
+    watermark = watermark.rotate(45, expand=True)
+
+    combined = Image.alpha_composite(logo, watermark)
+    return combined.convert("RGB")
+
+# Function to handle AI model interaction
 def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -> str:
-    """Uses the AI model to answer based on the provided FAQ content."""
     if model == "GPT (OpenAI)":
         openai.api_key = api_key
         prompt = f"Based on the following FAQ content, answer the question: {user_input}\n\nFAQ Content:\n{faq_content}"
@@ -39,64 +42,41 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
                 max_tokens=150,
                 temperature=0.7,
             )
-            return response.choices[0].message['content'].strip()
+            return response['choices'][0]['message']['content'].strip()
         except Exception as e:
             return f"Error generating response from GPT model: {str(e)}"
-
     
     elif model == "LLaMA":
-        tokenizer = AutoTokenizer.from_pretrained("huggingface/llama")
-        model = AutoModelForCausalLM.from_pretrained("huggingface/llama")
-        llm_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
-        
-        prompt = f"Based on the following FAQ content, answer the question: {user_input}\n\nFAQ Content:\n{faq_content}"
-        response = llm_pipeline(prompt, max_length=150, do_sample=True, temperature=0.7)
-        return response[0]['generated_text'].strip()
-    
-    elif model == "Gemini":
-        # Hypothetical example; replace with actual Gemini model usage if available
-        # Assuming Gemini has a similar API to GPT
-        headers = {"Authorization": f"Bearer {api_key}"}
-        data = {
-            "model": "gemini-1.0",
-            "prompt": f"Based on the following FAQ content, answer the question: {user_input}\n\nFAQ Content:\n{faq_content}",
-            "max_tokens": 150,
-            "temperature": 0.7,
-        }
-        response = requests.post("https://api.gemini.com/v1/complete", headers=headers, json=data)
-        return response.json()["choices"][0]["text"].strip()
-    
-    return "Model not supported yet."
+        # Implement LLaMA API interaction here
+        return "LLaMA model is currently not supported."
 
-# Streamlit Interface
+    elif model == "Gemini":
+        # Implement Gemini API interaction here
+        return "Gemini model is currently not supported."
+
+    else:
+        return "Unsupported model selected."
+
+# Streamlit interface
 st.title("AI-Powered FAQ Chatbot")
 
-# Choose the model
-model_choice = st.selectbox("Choose the AI model:", ["GPT (OpenAI)", "LLaMA", "Gemini"])
+# Apply watermark to the UI
+st.image(apply_watermark("assets/company_logo.png"))
 
-# Input the API key if GPT or Gemini is chosen
-api_key = None
-if model_choice in ["GPT (OpenAI)", "Gemini"]:
-    api_key = st.text_input("Enter your API Key:", type="password")
+# User input fields
+model_choice = st.selectbox("Choose the AI model", ["GPT (OpenAI)", "LLaMA", "Gemini"])
+api_key = st.text_input("Enter your API key", type="password")
+faq_url = st.text_input("Enter the FAQ URL")
 
-# Input the FAQ URL
-faq_url = st.text_input("Enter the FAQ page URL:")
+if st.button("Fetch FAQ"):
+    faq_content = fetch_faq_content(faq_url)
+    st.text_area("FAQ Content", faq_content)
 
-# User input
-user_input = st.text_area("Ask a question:")
+user_input = st.text_input("Ask a question based on the FAQ")
 
-# Display response
-if st.button("Get Answer"):
-    if model_choice in ["GPT (OpenAI)", "Gemini"] and not api_key:
-        st.warning("Please enter your API key.")
-    elif not faq_url.strip():
-        st.warning("Please enter a valid FAQ page URL.")
-    elif user_input.strip() == "":
-        st.warning("Please enter a question.")
+if st.button("Submit"):
+    if faq_url and faq_content and user_input:
+        response = chat_with_faq(faq_content, model_choice, api_key, user_input)
+        st.write(f"Answer: {response}")
     else:
-        faq_content = extract_faq_from_url(faq_url)
-        if "Error" in faq_content:
-            st.error(faq_content)
-        else:
-            response = chat_with_faq(faq_content, model_choice, api_key, user_input)
-            st.write("**Answer:**", response)
+        st.write("Please provide the FAQ URL, fetch FAQ, and enter your question.")
