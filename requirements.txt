@@ -4,3 +4,5 @@ llama-cpp-python
 gemini-ai # Placeholder, replace with the actual package name if it exists
 requests  # For fetching FAQ content from URLs
 Pillow # For image processing
+PIL
+io
