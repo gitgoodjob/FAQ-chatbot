@@ -1,7 +1,6 @@
 import openai
 import streamlit as st
 import requests
-from PIL import Image, ImageDraw, ImageFont
 
 # Function to fetch and process FAQ content from a URL
 def fetch_faq_content(faq_url: str) -> str:
@@ -11,20 +10,6 @@ def fetch_faq_content(faq_url: str) -> str:
         return response.text  # Parse as needed (HTML, JSON, etc.)
     except Exception as e:
         return f"Error fetching FAQ content: {str(e)}"
-
-# Function to create a watermark logo
-def apply_watermark(image_path, output_size=(1024, 768)):
-    logo = Image.open(image_path).convert("RGBA")
-    logo = logo.resize(output_size, Image.ANTIALIAS)
-
-    watermark = Image.new("RGBA", logo.size)
-    draw = ImageDraw.Draw(watermark, "RGBA")
-    draw.text((logo.size[0] // 4, logo.size[1] // 2), "FAQ Logo", font=ImageFont.load_default(), fill=(255, 255, 255, 128))
-
-    watermark = watermark.rotate(45, expand=True)
-
-    combined = Image.alpha_composite(logo, watermark)
-    return combined.convert("RGB")
 
 # Function to handle AI model interaction
 def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -> str:
@@ -67,9 +52,6 @@ def chat_with_faq(faq_content: str, model: str, api_key: str, user_input: str) -
 
 # Streamlit interface
 st.title("AI-Powered FAQ Chatbot")
-
-# Apply watermark to the UI
-st.image(apply_watermark("assets/company_logo.png"))
 
 # User input fields
 model_choice = st.selectbox("Choose the AI model", ["GPT (OpenAI)", "Gemini"])
