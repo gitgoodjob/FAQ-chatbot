@@ -5,3 +5,5 @@ google-generativeai
 requests
 Pillow
 claude2
+PIL
+io
