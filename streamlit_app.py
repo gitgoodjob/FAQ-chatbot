@@ -1,6 +1,6 @@
 import streamlit as st
 import openai
-from langchain.llms import LLaMA
+#from langchain.llms import LLaMA
 from typing import Optional
 
 
@@ -14,10 +14,10 @@ def chat_with_gpt(api_key: str, user_input: str) -> str:
     )
     return response.choices[0].text.strip()
 
-def chat_with_llama(user_input: str) -> str:
+'''def chat_with_llama(user_input: str) -> str:
     llm = LLaMA(model_path="path/to/llama/model")
     response = llm(user_input)
-    return response.strip()
+    return response.strip()'''
 
 def chatbot_interface(api_key: Optional[str], model_choice: str, user_input: str) -> str:
     if model_choice == "GPT (OpenAI)":
